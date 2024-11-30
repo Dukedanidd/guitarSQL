@@ -1,18 +1,14 @@
 import { useState } from 'react'
 
-type LoginProps = {
+type LoginModalProps = {
     isOpen: boolean
     onClose: () => void
 }
 
-export default function Login({ isOpen, onClose }: LoginProps) {
+export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     const [formData, setFormData] = useState({
-        nombre: '',
         email: '',
-        password: '',
-        direccion: '',
-        telefono: '',
-        fechaRegistro: ''
+        password: ''
     })
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +21,7 @@ export default function Login({ isOpen, onClose }: LoginProps) {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        console.log('Datos del registro:', formData)
+        console.log('Datos de inicio de sesión:', formData)
         onClose()
     }
 
@@ -42,20 +38,8 @@ export default function Login({ isOpen, onClose }: LoginProps) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                <h3 className="text-center mb-4">Registro de Usuario</h3>
+                <h3 className="text-center mb-4">Iniciar Sesión</h3>
                 <form onSubmit={handleSubmit} className="space-y-3">
-                    <div className="form-group">
-                        <label className="form-label">Nombre completo:</label>
-                        <input
-                            type="text"
-                            name="nombre"
-                            className="form-input"
-                            value={formData.nombre}
-                            onChange={handleChange}
-                            required
-                            placeholder="Ingrese su nombre completo"
-                        />
-                    </div>
                     <div className="form-group">
                         <label className="form-label">Email:</label>
                         <input
@@ -80,46 +64,11 @@ export default function Login({ isOpen, onClose }: LoginProps) {
                             placeholder="********"
                         />
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">Dirección:</label>
-                        <input
-                            type="text"
-                            name="direccion"
-                            className="form-input"
-                            value={formData.direccion}
-                            onChange={handleChange}
-                            required
-                            placeholder="Ingrese su dirección completa"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Teléfono:</label>
-                        <input
-                            type="tel"
-                            name="telefono"
-                            className="form-input"
-                            value={formData.telefono}
-                            onChange={handleChange}
-                            required
-                            placeholder="Ej: +34 612345678"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Fecha de registro:</label>
-                        <input
-                            type="date"
-                            name="fechaRegistro"
-                            className="form-input"
-                            value={formData.fechaRegistro}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
                     <button 
                         type="submit"
                         className="btn btn-dark w-100 mt-4"
                     >
-                        Registrar Usuario
+                        Iniciar Sesión
                     </button>
                 </form>
             </div>

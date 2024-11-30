@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CartItem, Guitar } from "../types"
 import Login from './Login'
+import LoginModal from './LoginModal'
 
 type HeaderProps = {
     cart: CartItem[]
@@ -22,6 +23,7 @@ export default function Header({
     cartTotal
 }: HeaderProps) {
     const [isLoginOpen, setIsLoginOpen] = useState(false)
+    const [isRegisterOpen, setIsRegisterOpen] = useState(false)
 
     return (
         <>
@@ -30,89 +32,94 @@ export default function Header({
                     <div className="row justify-content-center justify-content-md-between">
                         <div className="col-8 col-md-3">
                             <a href="index.html">
-                                <img className="img-fluid" src="/img/logo.svg" alt="imagen logo" />
                             </a>
                         </div>
-                        <nav className="col-md-6 a mt-5 d-flex align-items-start justify-content-end gap-3">
-                            <button
-                                className="btn btn-dark"
-                                onClick={() => setIsLoginOpen(true)}
-                            >
-                                Iniciar Sesión
-                            </button>
-                            <div 
-                                className="carrito"
-                            >
-                                <img className="img-fluid" src="/img/carrito.png" alt="imagen carrito" />
+                        <nav className="col-md-6 mt-5 d-flex align-items-center justify-content-end">
+                            <div className="d-flex gap-3 align-items-center">
+                                <button
+                                    className="btn btn-outline-light text-uppercase py-2 px-4"
+                                    onClick={() => setIsRegisterOpen(true)}
+                                >
+                                    Registrarse
+                                </button>
+                                <button
+                                    className="btn btn-dark text-uppercase py-2 px-4"
+                                    onClick={() => setIsLoginOpen(true)}
+                                >
+                                    Iniciar Sesión
+                                </button>
+                                <div className="carrito">
+                                    <img className="img-fluid" src="/img/carrito.png" alt="imagen carrito" />
 
-                                <div id="carrito" className="bg-white p-3">
-                                    {isEmpty ? (
-                                        <p className="text-center">El carrito esta vacio</p>
-                                    ) : (
-                                    <>
-                                        <table className="w-100 table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Imagen</th>
-                                                    <th>Nombre</th>
-                                                    <th>Precio</th>
-                                                    <th>Cantidad</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {cart.map( guitar => (
-                                                    <tr key={guitar.id}>
-                                                        <td>
-                                                            <img 
-                                                                className="img-fluid" 
-                                                                src={`/img/${guitar.image}.jpg`}
-                                                                alt="imagen guitarra" 
-                                                            />
-                                                        </td>
-                                                        <td>{guitar.name}</td>
-                                                        <td className="fw-bold">
-                                                            ${guitar.price}
-                                                        </td>
-                                                        <td className="flex align-items-start gap-4">
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-dark"
-                                                                onClick={() => decreaseQuantity(guitar.id)}
-                                                            >
-                                                                -
-                                                            </button>
-                                                                {guitar.quantity}
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-dark"
-                                                                onClick={() => increaseQuantity(guitar.id)}
-                                                            >
-                                                                +
-                                                            </button>
-                                                        </td>
-                                                        <td>
-                                                            <button
-                                                                className="btn btn-danger"
-                                                                type="button"
-                                                                onClick={() => removeFromCart(guitar.id)}
-                                                            >
-                                                                X
-                                                            </button>
-                                                        </td>
+                                    <div id="carrito" className="bg-white p-3">
+                                        {isEmpty ? (
+                                            <p className="text-center">El carrito esta vacio</p>
+                                        ) : (
+                                        <>
+                                            <table className="w-100 table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Imagen</th>
+                                                        <th>Nombre</th>
+                                                        <th>Precio</th>
+                                                        <th>Cantidad</th>
+                                                        <th></th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                                </thead>
+                                                <tbody>
+                                                    {cart.map( guitar => (
+                                                        <tr key={guitar.id}>
+                                                            <td>
+                                                                <img 
+                                                                    className="img-fluid" 
+                                                                    src={`/img/${guitar.image}.jpg`}
+                                                                    alt="imagen guitarra" 
+                                                                />
+                                                            </td>
+                                                            <td>{guitar.name}</td>
+                                                            <td className="fw-bold">
+                                                                ${guitar.price}
+                                                            </td>
+                                                            <td className="flex align-items-start gap-4">
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-dark"
+                                                                    onClick={() => decreaseQuantity(guitar.id)}
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                    {guitar.quantity}
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-dark"
+                                                                    onClick={() => increaseQuantity(guitar.id)}
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </td>
+                                                            <td>
+                                                                <button
+                                                                    className="btn btn-danger"
+                                                                    type="button"
+                                                                    onClick={() => removeFromCart(guitar.id)}
+                                                                >
+                                                                    X
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
 
-                                        <p className="text-end">Total pagar: <span className="fw-bold">${cartTotal}</span></p>
-                                    </>
-                                    )}
+                                            <p className="text-end">Total pagar: <span className="fw-bold">${cartTotal}</span></p>
+                                        </>
+                                        )}
 
-                                    <button 
-                                        className="btn btn-dark w-100 mt-3 p-2"
-                                        onClick={clearCart}
-                                    >Vaciar Carrito</button>
+                                        <button 
+                                            className="btn btn-dark w-100 mt-3 p-2"
+                                            onClick={clearCart}
+                                        >Vaciar Carrito</button>
+                                    </div>
                                 </div>
                             </div>
                         </nav>
@@ -121,6 +128,10 @@ export default function Header({
             </header>
             
             <Login 
+                isOpen={isRegisterOpen}
+                onClose={() => setIsRegisterOpen(false)}
+            />
+            <LoginModal 
                 isOpen={isLoginOpen}
                 onClose={() => setIsLoginOpen(false)}
             />
