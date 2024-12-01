@@ -1,10 +1,23 @@
 import Guitar from "./components/Guitar"
 import Header from "./components/Header"
 import { useCart } from './hooks/useCart'
+import { useEffect, useState } from 'react'
+import api from './apis/api'
 
 function App() {
-
+  // Cambiar el tipo de estado según la estructura de tu tabla
+  const [apiData, setApiData] = useState<any[]>([])
   const { data, cart, addToCart, removeFromCart, decreaseQuantity, increaseQuantity, clearCart, isEmpty, cartTotal } = useCart()
+
+  useEffect(() => {
+    api.get("/data")  // Cambiar la ruta de "/" a "/data"
+      .then((response) => {
+        setApiData(response.data)
+      })
+      .catch((error) => {
+        console.error("Error al obtener datos:", error)
+      })
+  }, [])
 
   return (
     <>
@@ -18,6 +31,17 @@ function App() {
         cartTotal={cartTotal}
       />
       
+      {/* Actualizar la visualización de los datos */}
+      <div>
+        <h1>Datos de la base de datos</h1>
+        {apiData.map((item, index) => (
+          <div key={index}>
+            {/* Ajusta esto según la estructura de tu tabla */}
+            <pre>{JSON.stringify(item, null, 2)}</pre>
+          </div>
+        ))}
+      </div>
+
       <main className="container-xl mt-5">
           <h2 className="text-center">Nuestra Colección</h2>
 
