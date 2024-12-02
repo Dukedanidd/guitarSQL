@@ -4,12 +4,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 // Resto de imports
-import express from "express";
-import mysql from "mysql2";
+import express, { Request, Response } from "express";
+import mysql, { QueryResult } from "mysql2";
 import cors from "cors";
+import bcrypt from 'bcrypt';
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.EXPRESS_PORT;
 
 // Agregar middleware de CORS
 app.use(cors());
@@ -49,7 +50,7 @@ app.get("/", (req, res) => {
 
 // Agregar el nuevo endpoint para obtener datos
 app.get("/data", (req, res) => {
-  db.query("SELECT * FROM items_carrito", (err, results) => {
+  db.query("SELECT * FROM guitarla.guitarras", (err, results) => {
     if (err) {
       console.error("Error al ejecutar consulta:", err);
       res.status(500).json({
@@ -62,6 +63,69 @@ app.get("/data", (req, res) => {
     res.json(results);
   });
 });
+
+// ENDPOINT PARA REGISTRAR USUARIOS
+app.post("/register", (req: Request, res: Response) => {
+  const { email, contraseña, nombre, apellido, dirección, teléfono } = req.body;
+
+  // Validar los datos recibidos
+  if (!email || !contraseña || !nombre || !apellido) {
+    return res.status(400).json({
+      error: "Faltan datos obligatorios: email, contraseña, nombre y apellido son requeridos.",
+    });
+  }
+
+  // Encriptar la contraseña antes de almacenarla (por seguridad)
+  const saltRounds = 10;
+
+  bcrypt.hash(contraseña, saltRounds, (err: Error | null, hash: string) => {
+    if (err) {
+      console.error("Error al encriptar la contraseña:", err);
+      return res.status(500).json({
+        error: "Error al procesar la contraseña",
+      });
+    }
+
+    // Insertar el nuevo usuario en la base de datos
+    const sqlQuery = `
+      INSERT INTO usuarios (email, contraseña, nombre, apellido, dirección, teléfono)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [email, hash, nombre, apellido, dirección || null, teléfono || null];
+
+    db.query(sqlQuery, values, (dbErr, results) => {
+      if (dbErr) {
+        // Manejar errores comunes como email duplicado
+        if (dbErr.code === "ER_DUP_ENTRY") {
+          return res.status(400).json({
+            error: "El email ya está registrado.",
+          });
+        }
+        console.error("Error al registrar usuario:", dbErr);
+        return res.status(500).json({
+          error: "Error al registrar el usuario",
+          details: dbErr.message,
+        });
+      } else {
+        const userId = results.insertId;
+        console.log("Usuario registrado con ID:", userId);
+        res.status(201).json({
+          message: "Usuario registrado con éxito.",
+          userId: userId,
+        });
+      }
+    });
+  });
+});
+
+
+// app.get(/carrito) necesita los items del carrito del usuario
+
+// app.post(/agregar-a-carrito) agrega un item al carrito del usuario que inicio sesion
+// app.delete(/borrar-del-carrito)
+
+
 
 // Endpoint de prueba para verificar la conexión
 app.get("/test-db", (req, res) => {

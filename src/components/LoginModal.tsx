@@ -19,11 +19,35 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         }))
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        console.log('Datos de inicio de sesión:', formData)
-        onClose()
-    }
+
+    //AGREGAR AL CARRITO
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+      
+        try {
+          const response = await fetch("http://localhost:3000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData),
+          });
+      
+          const data = await response.json();
+      
+          if (!response.ok) {
+            throw new Error(data.error || "Error al registrar usuario");
+          }
+      
+          console.log("Usuario registrado:", data);
+          onClose(); // Cierra el modal
+        } catch (error) {
+          console.error("Error en el registro:", error.message);
+          alert("Error: " + error.message);
+        }
+      };
+
+      
+
+
 
     if (!isOpen) return null
 

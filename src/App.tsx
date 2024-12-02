@@ -8,10 +8,13 @@ function App() {
   // Cambiar el tipo de estado según la estructura de tu tabla
   const [apiData, setApiData] = useState<any[]>([])
   const { data, cart, addToCart, removeFromCart, decreaseQuantity, increaseQuantity, clearCart, isEmpty, cartTotal } = useCart()
+  const [guitars, setGuitars] = useState([]);
 
   useEffect(() => {
     api.get("/data")  // Cambiar la ruta de "/" a "/data"
       .then((response) => {
+       // console.log(response)
+        setGuitars(response.data);
         setApiData(response.data)
       })
       .catch((error) => {
@@ -37,7 +40,7 @@ function App() {
         {apiData.map((item, index) => (
           <div key={index}>
             {/* Ajusta esto según la estructura de tu tabla */}
-            <pre>{JSON.stringify(item, null, 2)}</pre>
+           
           </div>
         ))}
       </div>
@@ -46,7 +49,7 @@ function App() {
           <h2 className="text-center">Nuestra Colección</h2>
 
           <div className="row mt-5">
-              {data.map((guitar) => (
+              {guitars.map((guitar) => (
                   <Guitar 
                     key={guitar.id}
                     guitar={guitar}
