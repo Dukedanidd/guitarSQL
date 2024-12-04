@@ -5,14 +5,14 @@ type LoginProps = {
     onClose: () => void
 }
 
-export default function Login({ isOpen, onClose }: LoginProps) {
+export default function Login({ isOpen, onClose }: any) {
     const [formData, setFormData] = useState({
         nombre: '',
+        apellido: '',
         email: '',
-        password: '',
-        direccion: '',
-        telefono: '',
-        fechaRegistro: ''
+        contraseña: '',
+        dirección: '',
+        teléfono: '',
     })
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,11 +23,30 @@ export default function Login({ isOpen, onClose }: LoginProps) {
         }))
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        console.log('Datos del registro:', formData)
-        onClose()
-    }
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        
+        try {
+            const response = await fetch("http://localhost:3000/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Error al registrar usuario");
+            }
+
+            console.log("Usuario registrado:", data);
+            onClose(); // Cierra el modal
+        } catch (error) {
+            const errorMessage = (error as Error).message;
+            console.error("Error en el registro:", errorMessage);
+            alert("Error: " + errorMessage);
+        }
+    };
 
     if (!isOpen) return null
 
@@ -57,6 +76,18 @@ export default function Login({ isOpen, onClose }: LoginProps) {
                         />
                     </div>
                     <div className="form-group">
+                        <label className="form-label">Apellido:</label>
+                        <input
+                            type="text"
+                            name="apellido"
+                            className="form-input"
+                            value={formData.apellido}
+                            onChange={handleChange}
+                            required
+                            placeholder="Ingrese su apellido"
+                        />
+                    </div>
+                    <div className="form-group">
                         <label className="form-label">Email:</label>
                         <input
                             type="email"
@@ -72,9 +103,9 @@ export default function Login({ isOpen, onClose }: LoginProps) {
                         <label className="form-label">Contraseña:</label>
                         <input
                             type="password"
-                            name="password"
+                            name="contraseña"
                             className="form-input"
-                            value={formData.password}
+                            value={formData.contraseña}
                             onChange={handleChange}
                             required
                             placeholder="********"
@@ -84,9 +115,9 @@ export default function Login({ isOpen, onClose }: LoginProps) {
                         <label className="form-label">Dirección:</label>
                         <input
                             type="text"
-                            name="direccion"
+                            name="dirección"
                             className="form-input"
-                            value={formData.direccion}
+                            value={formData.dirección}
                             onChange={handleChange}
                             required
                             placeholder="Ingrese su dirección completa"
@@ -96,23 +127,12 @@ export default function Login({ isOpen, onClose }: LoginProps) {
                         <label className="form-label">Teléfono:</label>
                         <input
                             type="tel"
-                            name="telefono"
+                            name="teléfono"
                             className="form-input"
-                            value={formData.telefono}
+                            value={formData.teléfono}
                             onChange={handleChange}
                             required
                             placeholder="Ej: +34 612345678"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">Fecha de registro:</label>
-                        <input
-                            type="date"
-                            name="fechaRegistro"
-                            className="form-input"
-                            value={formData.fechaRegistro}
-                            onChange={handleChange}
-                            required
                         />
                     </div>
                     <button 

@@ -7,9 +7,9 @@ import api from './apis/api'
 function App() {
   // Cambiar el tipo de estado según la estructura de tu tabla
   const [apiData, setApiData] = useState<any[]>([])
-  const { data, cart, addToCart, removeFromCart, decreaseQuantity, increaseQuantity, clearCart, isEmpty, cartTotal } = useCart()
+  const { data, cart, addToCart, removeFromCart, decreaseQuantity, increaseQuantity, clearCart, isEmpty, cartTotal,userId } = useCart()
   const [guitars, setGuitars] = useState([]);
-
+  console.log("userID this header=>",userId)
   useEffect(() => {
     api.get("/data")  // Cambiar la ruta de "/" a "/data"
       .then((response) => {
@@ -32,6 +32,7 @@ function App() {
         clearCart={clearCart}
         isEmpty={isEmpty}
         cartTotal={cartTotal}
+        userId={userId}
       />
       
       {/* Actualizar la visualización de los datos */}

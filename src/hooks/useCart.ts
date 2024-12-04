@@ -10,6 +10,7 @@ export const useCart = () => {
     }
 
     const [data] = useState(db)
+    const [userId, setUserId]=useState()
     const [cart, setCart] = useState(initialCart)
 
     const MIN_ITEMS = 1
@@ -19,8 +20,8 @@ export const useCart = () => {
         localStorage.setItem('cart', JSON.stringify(cart))
     }, [cart])
 
-    function addToCart(item : Guitar) {
-        const itemExists = cart.findIndex(guitar => guitar.id === item.id)
+    function addToCart(item : any) {
+        const itemExists = cart.findIndex(guitar => guitar.id_guitarra=== item.id_guitarra)
         if(itemExists >= 0 ) { // existe en el carrito
             if(cart[itemExists].quantity >= MAX_ITEMS) return
             const updatedCart = [...cart]
@@ -36,9 +37,9 @@ export const useCart = () => {
         setCart(prevCart => prevCart.filter(guitar => guitar.id !== id))
     }
 
-    function decreaseQuantity(id : Guitar['id']) {
+    function decreaseQuantity(id : any) {
         const updatedCart = cart.map( item => {
-            if(item.id === id && item.quantity > MIN_ITEMS) {
+            if(item.id_guitarra === id && item.quantity > MIN_ITEMS) {
                 return {
                     ...item,
                     quantity: item.quantity - 1
@@ -49,9 +50,9 @@ export const useCart = () => {
         setCart(updatedCart)
     }
 
-    function increaseQuantity(id : Guitar['id']) {
+    function increaseQuantity(id : any) {
         const updatedCart = cart.map( item => {
-            if(item.id === id && item.quantity < MAX_ITEMS) {
+            if(item.id_guitarra === id && item.quantity < MAX_ITEMS) {
                 return {
                     ...item,
                     quantity: item.quantity + 1
@@ -68,7 +69,9 @@ export const useCart = () => {
 
     // State Derivado
     const isEmpty = useMemo( () => cart.length === 0, [cart])
-    const cartTotal = useMemo( () => cart.reduce( (total, item ) => total + (item.quantity * item.price), 0), [cart] )
+    const cartTotal = useMemo( () => cart.reduce( (total, item ) => total + (item.quantity * item.precio), 0), [cart] )
+
+    // ID
 
     return {
         data,
@@ -79,6 +82,8 @@ export const useCart = () => {
         increaseQuantity,
         clearCart,
         isEmpty,
-        cartTotal
+        cartTotal,
+        setUserId,
+        userId
     }
 }

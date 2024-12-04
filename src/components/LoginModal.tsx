@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useCart } from '../hooks/useCart'
 
 type LoginModalProps = {
     isOpen: boolean
     onClose: () => void
+    onLoginSuccess: (name: string) => void
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, onLoginSuccess,setUserId }: any) {
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -19,35 +21,33 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         }))
     }
 
-
-    //AGREGAR AL CARRITO
+    // Iniciar sesión
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
       
         try {
-          const response = await fetch("http://localhost:3000/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
-          });
-      
-          const data = await response.json();
-      
-          if (!response.ok) {
-            throw new Error(data.error || "Error al registrar usuario");
-          }
-      
-          console.log("Usuario registrado:", data);
-          onClose(); // Cierra el modal
+            const response = await fetch("http://localhost:3000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Error al iniciar sesión");
+            }
+
+            console.log("Inicio de sesión exitoso:", data);
+            setUserId(data.userId)
+            onLoginSuccess(data.nombre); // Llama a onLoginSuccess con el nombre del usuario
+            onClose(); // Cierra el modal
         } catch (error) {
-          console.error("Error en el registro:", error.message);
-          alert("Error: " + error.message);
+            const errorMessage = (error as Error).message;
+            console.error("Error en el inicio de sesión:", errorMessage);
+            alert("Error: " + errorMessage);
         }
-      };
-
-      
-
-
+    };
 
     if (!isOpen) return null
 

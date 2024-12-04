@@ -5,9 +5,8 @@ dotenv.config();
 
 // Resto de imports
 import express, { Request, Response } from "express";
-import mysql, { QueryResult } from "mysql2";
+import mysql, { QueryResult, ResultSetHeader, RowDataPacket } from "mysql2";
 import cors from "cors";
-import bcrypt from 'bcrypt';
 
 const app = express();
 const PORT = process.env.EXPRESS_PORT;
@@ -66,64 +65,145 @@ app.get("/data", (req, res) => {
 
 // ENDPOINT PARA REGISTRAR USUARIOS
 app.post("/register", (req: Request, res: Response) => {
-  const { email, contraseña, nombre, apellido, dirección, teléfono } = req.body;
+    const { email, contraseña, nombre, apellido, dirección, teléfono } = req.body;
 
-  // Validar los datos recibidos
-  if (!email || !contraseña || !nombre || !apellido) {
-    return res.status(400).json({
-      error: "Faltan datos obligatorios: email, contraseña, nombre y apellido son requeridos.",
-    });
-  }
-
-  // Encriptar la contraseña antes de almacenarla (por seguridad)
-  const saltRounds = 10;
-
-  bcrypt.hash(contraseña, saltRounds, (err: Error | null, hash: string) => {
-    if (err) {
-      console.error("Error al encriptar la contraseña:", err);
-      return res.status(500).json({
-        error: "Error al procesar la contraseña",
-      });
-    }
-
-    // Insertar el nuevo usuario en la base de datos
+    // Consulta SQL para insertar el nuevo usuario
     const sqlQuery = `
       INSERT INTO usuarios (email, contraseña, nombre, apellido, dirección, teléfono)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
 
-    const values = [email, hash, nombre, apellido, dirección || null, teléfono || null];
+    const values = [email, contraseña, nombre, apellido, dirección, teléfono];
 
-    db.query(sqlQuery, values, (dbErr, results) => {
-      if (dbErr) {
-        // Manejar errores comunes como email duplicado
-        if (dbErr.code === "ER_DUP_ENTRY") {
-          return res.status(400).json({
-            error: "El email ya está registrado.",
-          });
+    db.query(sqlQuery, values, (err, results: ResultSetHeader) => {
+        if (err) {
+            console.error("Error al registrar usuario:", err);
+            return res.status(500).json({
+                error: "Error al registrar el usuario",
+                details: err.message
+            });
         }
-        console.error("Error al registrar usuario:", dbErr);
-        return res.status(500).json({
-          error: "Error al registrar el usuario",
-          details: dbErr.message,
-        });
-      } else {
         const userId = results.insertId;
         console.log("Usuario registrado con ID:", userId);
         res.status(201).json({
           message: "Usuario registrado con éxito.",
           userId: userId,
         });
-      }
     });
-  });
 });
 
+// ENDPOINT PARA INICIAR SESIÓN
+app.post("/login", (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    // Consulta SQL para buscar el usuario por email
+    const sqlQuery = `SELECT * FROM usuarios WHERE email = ?`;
+
+    db.query(sqlQuery, [email], (err, results: RowDataPacket[]) => {
+        if (err) {
+            console.error("Error al buscar usuario:", err);
+            return res.status(500).json({
+                error: "Error en el servidor",
+                details: err.message
+            });
+        }
+
+        // Verificar si hay resultados
+        if (results.length === 0) {
+            return res.status(401).json({ error: "Usuario no encontrado" });
+        }
+
+        const user = results[0];
+        console.log("eñ user is=>",user)
+
+        // Comparar la contraseña proporcionada con la almacenada (sin encriptación)
+        if (user.contraseña !== password) {
+            return res.status(401).json({ error: "Contraseña incorrecta" });
+        }
+
+        // Si todo es correcto, imprimir en consola y devolver un mensaje de éxito
+        console.log(`Inicio de sesión exitoso para el usuario: ${user.email}, ID: ${user.id}`);
+        res.status(200).json({
+            message: "Inicio de sesión exitoso",
+            userId: user.id_usuario,
+            nombre: user.nombre
+        });
+    });
+});
 
 // app.get(/carrito) necesita los items del carrito del usuario
 
 // app.post(/agregar-a-carrito) agrega un item al carrito del usuario que inicio sesion
 // app.delete(/borrar-del-carrito)
+
+// Endpoint para insertar datos en items_carrito
+app.post("/insert-cart", (req:any, res:any) => {
+  const { id_carrito, items } = req.body; // Extraer datos del cuerpo de la solicitud
+
+  if (!id_carrito || !items || !Array.isArray(items)) {
+    return res.status(400).json({
+      error: "Faltan datos requeridos o formato incorrecto",
+    });
+  }
+
+  // Convertir los datos de items a JSON para MySQL
+  const itemsJSON = JSON.stringify(items);
+
+  // Ejecutar el procedimiento almacenado
+  db.query(
+    "CALL InsertItemsCarrito(?, ?)",
+    [id_carrito, itemsJSON],
+    (err, results) => {
+      if (err) {
+        console.error("Error al ejecutar el procedimiento almacenado:", err);
+        return res.status(500).json({
+          error: "Error en el servidor",
+          details: err.message,
+        });
+      }
+
+      console.log("Inserción completada:", results); // Para depuración
+      res.status(200).json({
+        message: "Carrito insertado correctamente",
+        results,
+      });
+    }
+  );
+});
+
+app.post("/insert-new-cart", (req:any, res:any) => {
+  const { id_usuario } = req.body;
+
+  if (!id_usuario) {
+    return res.status(400).json({
+      error: "El campo 'id_usuario' es requerido.",
+    });
+  }
+
+  // Consulta SQL para insertar un nuevo carrito
+  const query = `INSERT INTO carrito (id_usuario, estado) VALUES (?, 'activo')`;
+
+  // Ejecutar la consulta
+  db.query(query, [id_usuario], (err, results:any) => {
+    if (err) {
+      console.error("Error al crear el carrito:", err);
+      return res.status(500).json({
+        error: "Error en el servidor al crear el carrito.",
+        details: err.message,
+      });
+    }
+    const id_carrito = results?.insertId;
+
+    console.log("ID del carrito recién creado:", id_carrito);
+
+    // Devolver el ID del carrito recién creado
+    res.json({
+      success: true,
+      message: "Carrito creado exitosamente.",
+      id_carrito: id_carrito,
+    });
+  });
+});
 
 
 
